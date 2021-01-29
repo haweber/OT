@@ -13,7 +13,7 @@ import math
 sys.path.append('MPA_Test/myScripts/') #python 2.7 ?
 from mpa_configurations import * # python 2.7 ?
 #from MPA_Test.myScripts.mpa_configurations import *
-from ArrayToCSV import *
+#from ArrayToCSV import *
 import os.path
 import glob
 import re

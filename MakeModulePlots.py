@@ -358,18 +358,35 @@ def MakeModulePlot(arrays_of_data= [ [] ], row = [],col = [],nfig=5,hmin=-1,hmax
     targetMaxValue = wa_sorted[-precentilepos]*1.25
     maximum = hmax if hmax >=0 else max(0,targetMaxValue)
     minimum = hmin if hmin >=0 else max(0,targetMinValue)
+    mingaus = minimum
+    maxgaus = maximum
+
     if plotAverage and hmax<0 and hmin<0:
 #        print ("Plotting average")
         minimum = max(0,max(np.mean(wa) - 4*np.std(wa),0.333*np.mean(wa)))
         maximum = max(0,min(np.mean(wa) + 4*np.std(wa),3.000*np.mean(wa)))
+        mingaus = max(0.,np.mean(wa) - 5.0*np.std(wa))
+        maxgaus = max(mingaus+1e-6,np.mean(wa) + 5.0*np.std(wa))
+
     for index in range(len(w)):
         if w[index]>maximum: w[index] = maximum
         if w[index]>0 and w[index]<minimum: w[index] = minimum
 
+    wa2 = []
+    for waentry in wa:
+        if waentry <= 0:
+            continue
+        if waentry < mingaus:
+            continue
+        if waentry > maxgaus:
+            continue
+        wa2.append(waentry)
+    if len(wa2)==0: wa2.append(0)
+
     fig = plt.figure(nfig,figsize=(10,5))#just an identifier 5*16, 7.5*2 80 15    10   3
     axy = fig.add_subplot(111)
     plt.subplots_adjust(left=0.12, bottom=0.11, right=0.98, top=0.80, wspace=0.2, hspace=0.2)
-    plt.hist2d(x,y,weights=w,bins=[picx,picy],cmin=minimum,cmax=maximum,range=[[0,picx],[0,picy] ] )
+    plt.hist2d(x,y,weights=w,bins=[picx,picy],cmin=minimum,cmax=maximum,vmin=minimum,vmax=maximum,range=[[0,picx],[0,picy] ] )
     cbar = plt.colorbar()
     cbar.set_label(data_label,fontweight='bold',labelpad=15)
     #now start hard-coding stuff for visualization of a MaPSA
@@ -410,10 +427,10 @@ def MakeModulePlot(arrays_of_data= [ [] ], row = [],col = [],nfig=5,hmin=-1,hmax
     plt.text( 774,-4.5,' 7',color='blue',fontweight='bold')#identifier is for chip ID
     plt.text( 893,-4.5,' 8',color='blue',fontweight='bold')#identifier is for chip ID
     if plotAverage:
-        plt.text(951,38,"Average %.2f +/- %.2f" % (np.mean(wa), np.std(wa)),horizontalalignment='right')
-        plt.grid()
-    if save_plot: plt.savefig(filename+".png",format='png',bbox_inches='tight',dpi=600,transparent=True)
-    if save_plot: plt.savefig(filename+".pdf",format='pdf',bbox_inches='tight',dpi=600,transparent=True)
+        plt.text(951,38,"Average %.2f +/- %.2f" % (np.mean(wa2), np.std(wa2)), horizontalalignment='right')
+
+    if save_plot: plt.savefig(filename+".png",format='png',bbox_inches='tight',dpi=600,transparent=False)
+    if save_plot: plt.savefig(filename+".pdf",format='pdf',bbox_inches='tight',dpi=600,transparent=False)
     #if save_plot: plt.savefig(filename+".pdf",format='pdf',bbox_inches='tight',transparent=True)#for my PC this does not produce vector graphics ...
     if show_plot: plt.show()
     if save_plot: plt.close()
@@ -524,13 +541,8 @@ def PlotAllPlotsAllModule(show_plot=True, save_plot=True):
     for m in modulenames:
         PlotAllPlotsOneModule(m,show_plot=show_plot,save_plot=save_plot)
 
-#PlotAllPlotsOneModule("AEMTec2",show_plot=True,save_plot=True)
-#PlotAllPlotsOneModule("HPK19_1",show_plot=False,save_plot=True)
-#PlotAllPlotsOneModule("HPK25_2",show_plot=False,save_plot=True)
+def main():
+    PlotAllPlotsModulesAutomated(show_plot=False, save_plot=True)
 
-#PlotAllPlotsAllModule(show_plot=True,save_plot=True)
-#PlotAllPlotsOneModuleAutomated("AEMTec2",show_plot=False,save_plot=True)
-#PlotAllPlotsOneModuleAutomated("HPK31_1",show_plot=False,save_plot=True)
-#PlotAllPlotsOneModuleAutomated("QuikPak_PS-p-P2",show_plot=False,save_plot=True)
-#PlotAllPlotsOneModuleAutomated("QuikPak_PS-p-P1",show_plot=False,save_plot=True)
-PlotAllPlotsModulesAutomated(show_plot=False, save_plot=True)
+if __name__ == "__main__":
+    main()
